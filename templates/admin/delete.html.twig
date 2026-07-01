@@ -1,0 +1,17 @@
+{% extends '@UbermudaFeatureFlags/base.html.twig' %}
+
+{% block title %}Delete {{ flag.name }}{% endblock %}
+
+{% block body %}
+    <h1>Delete feature flag: {{ flag.name }}</h1>
+
+    <p>Are you sure you want to delete <strong>{{ flag.name }}</strong>? This cannot be undone.</p>
+
+    {% set returnTo = app.request.query.get('returnTo') %}
+    {{ form_start(form) }}
+        <input type="hidden" name="returnTo" value="{{ returnTo }}">
+        {{ form_widget(form) }}
+    {{ form_end(form) }}
+
+    <p><a href="{{ (returnTo and returnTo starts with '/') ? returnTo : path('ubermuda_feature_flags_list') }}">Cancel</a></p>
+{% endblock %}

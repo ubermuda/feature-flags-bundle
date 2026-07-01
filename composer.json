@@ -1,0 +1,48 @@
+{
+    "name": "ubermuda/feature-flags-bundle",
+    "description": "Database-backed feature flags for Symfony, with a self-contained admin UI.",
+    "type": "symfony-bundle",
+    "license": "proprietary",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/ubermuda/symfony-extra"
+        }
+    ],
+    "require": {
+        "php": ">=8.4",
+        "doctrine/dbal": "^4.0",
+        "doctrine/doctrine-bundle": "^3.2",
+        "doctrine/orm": "^3.6",
+        "psr/log": "^3.0",
+        "symfony/finder": "^7.2|^8.0",
+        "symfony/form": "^7.2|^8.0",
+        "symfony/framework-bundle": "^7.2|^8.0",
+        "symfony/security-bundle": "^7.2|^8.0",
+        "symfony/translation": "^7.2|^8.0",
+        "symfony/twig-bundle": "^7.2|^8.0",
+        "twig/twig": "^3.10",
+        "ubermuda/symfony-extra": "dev-main@dev"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5",
+        "symfony/phpunit-bridge": "^7.2|^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ubermuda\\FeatureFlagsBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ubermuda\\FeatureFlagsBundle\\Test\\": "test/"
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "symfony/flex": false
+        }
+    }
+}

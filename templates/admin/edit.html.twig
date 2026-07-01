@@ -1,0 +1,20 @@
+{% extends '@UbermudaFeatureFlags/base.html.twig' %}
+
+{% block title %}Edit {{ flag.name }}{% endblock %}
+
+{% block body %}
+    {% set returnTo = app.request.query.get('returnTo') %}
+    {% set backUrl = (returnTo and returnTo starts with '/') ? returnTo : path('ubermuda_feature_flags_list') %}
+
+    <h1>Edit feature flag: {{ flag.name }}</h1>
+
+    {{ form_start(form, { attr: { 'data-controller': 'feature-flag-form' } }) }}
+        {{ form_widget(form) }}
+    {{ form_end(form) }}
+
+    <p>
+        <a href="{{ backUrl }}">Back to list</a>
+        &middot;
+        <a href="{{ path('ubermuda_feature_flags_delete', { id: flag.id, returnTo: backUrl }) }}">Delete</a>
+    </p>
+{% endblock %}

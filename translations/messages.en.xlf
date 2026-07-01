@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+    <file source-language="en" target-language="en" datatype="plaintext" original="ubermuda-feature-flags">
+        <body>
+            <trans-unit id="feature_flags.flash.created">
+                <source>feature_flags.flash.created</source>
+                <target>Feature flag created!</target>
+            </trans-unit>
+            <trans-unit id="feature_flags.flash.updated">
+                <source>feature_flags.flash.updated</source>
+                <target>Feature flag updated!</target>
+            </trans-unit>
+            <trans-unit id="feature_flags.flash.deleted">
+                <source>feature_flags.flash.deleted</source>
+                <target>Feature flag deleted.</target>
+            </trans-unit>
+        </body>
+    </file>
+</xliff>

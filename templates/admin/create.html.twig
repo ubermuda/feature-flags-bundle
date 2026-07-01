@@ -1,0 +1,13 @@
+{% extends '@UbermudaFeatureFlags/base.html.twig' %}
+
+{% block title %}New feature flag{% endblock %}
+
+{% block body %}
+    <h1>New feature flag</h1>
+
+    {{ form_start(form, { attr: { 'data-controller': 'feature-flag-form' } }) }}
+        {{ form_widget(form) }}
+    {{ form_end(form) }}
+
+    <p><a href="{{ path('ubermuda_feature_flags_list') }}">Cancel</a></p>
+{% endblock %}

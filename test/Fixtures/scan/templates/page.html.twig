@@ -1,0 +1,5 @@
+{% if is_feature_enabled('alpha') %}
+    {{ feature_flag_value('beta') }}
+{% endif %}
+{# duplicate reference, should be de-duplicated #}
+{% if is_feature_enabled('alpha') %}x{% endif %}

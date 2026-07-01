@@ -1,0 +1,44 @@
+{% extends '@UbermudaFeatureFlags/base.html.twig' %}
+
+{% block title %}Scan feature flags{% endblock %}
+
+{% block body %}
+    <h1>Scan feature flags</h1>
+
+    <p><a href="{{ path('ubermuda_feature_flags_list') }}">Back to list</a></p>
+
+    <h2>Referenced but undefined ({{ undefined_flags|length }})</h2>
+    {% if undefined_flags is empty %}
+        <p>None — every referenced flag exists.</p>
+    {% else %}
+        <ul>
+            {% for name in undefined_flags %}
+                <li>
+                    {{ name }}
+                    <a href="{{ path('ubermuda_feature_flags_create', { name: name }) }}">Create</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <h2>Defined but orphaned ({{ orphan_flags|length }})</h2>
+    {% if orphan_flags is empty %}
+        <p>None — every stored flag is referenced.</p>
+    {% else %}
+        <form method="post" action="{{ path('ubermuda_feature_flags_delete_orphaned') }}">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('feature_flag_delete_orphaned') }}">
+            <ul>
+                {% for name in orphan_flags %}
+                    <li>
+                        <label>
+                            <input type="checkbox" name="names[]" value="{{ name }}">
+                            {{ name }}
+                        </label>
+                    </li>
+                {% endfor %}
+            </ul>
+            <p><small>Leave all unchecked to delete every orphaned flag.</small></p>
+            <button type="submit">Delete selected orphaned flags</button>
+        </form>
+    {% endif %}
+{% endblock %}
