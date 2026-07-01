@@ -37,7 +37,7 @@ final class TemplateRenderingTest extends KernelTestCase
     {
         $twig = $this->twig();
 
-        foreach (['base', 'admin/list', 'admin/create', 'admin/edit', 'admin/delete', 'admin/scan'] as $name) {
+        foreach (['base', 'admin/list', 'admin/create', 'admin/edit', 'admin/scan'] as $name) {
             $twig->load('@UbermudaFeatureFlags/'.$name.'.html.twig');
         }
 

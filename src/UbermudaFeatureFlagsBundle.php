@@ -44,12 +44,13 @@ class UbermudaFeatureFlagsBundle extends AbstractBundle
     public function prependExtension(ContainerConfigurator $container, ContainerBuilder $builder): void
     {
         if ($builder->hasExtension('framework')) {
-            // The admin's hand-rolled forms (toggle, prune-orphaned) are guarded by
-            // #[CsrfToken]; register their stateless token ids so the app doesn't have to.
+            // The admin's hand-rolled forms (toggle, delete, prune-orphaned) are guarded
+            // by #[CsrfToken]; register their stateless token ids so the app doesn't have to.
             $builder->prependExtensionConfig('framework', [
                 'csrf_protection' => [
                     'stateless_token_ids' => [
                         'feature_flag_toggle',
+                        'feature_flag_delete',
                         'feature_flag_delete_orphaned',
                     ],
                 ],

@@ -35,7 +35,7 @@ return static function (RoutingConfigurator $routes): void {
 
     $routes->add('ubermuda_feature_flags_delete', $prefix.'/{id}/delete')
         ->controller(DeleteFeatureFlagController::class)
-        ->methods(['GET', 'POST'])
+        ->methods(['POST'])
         ->requirements(['id' => '\d+']);
 
     $routes->add('ubermuda_feature_flags_toggle', $prefix.'/{id}/toggle')
