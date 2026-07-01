@@ -9,7 +9,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Ubermuda\FeatureFlagsBundle\Command\DeleteFeatureFlagCommand;
 use Ubermuda\FeatureFlagsBundle\Command\DeleteFeatureFlagHandler;
 use Ubermuda\FeatureFlagsBundle\Entity\FeatureFlag;
-use Ubermuda\FeatureFlagsBundle\Listing\AdminReturnTo;
+use Ubermuda\AdminBundle\Listing\AdminReturnTo;
 use Ubermuda\FeatureFlagsBundle\Security\FeatureFlagVoter;
 use Ubermuda\SymfonyExtra\Csrf\Attribute\CsrfToken;
 
@@ -34,7 +34,7 @@ final class DeleteFeatureFlagController extends AbstractController
 
         $this->addFlash('success', 'feature_flags.flash.deleted');
 
-        $validatedReturnTo = $this->returnTo->validate($request->request->get('returnTo'));
+        $validatedReturnTo = $this->returnTo->validate('feature_flag', $request->request->get('returnTo'));
 
         return $this->redirect($validatedReturnTo ?? $this->generateUrl('ubermuda_feature_flags_list'));
     }

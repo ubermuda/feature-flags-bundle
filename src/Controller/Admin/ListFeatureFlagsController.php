@@ -6,9 +6,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Ubermuda\AdminBundle\Listing\ListPagePagination;
+use Ubermuda\AdminBundle\Listing\ListPageRequest;
 use Ubermuda\FeatureFlagsBundle\Enum\FeatureFlagType;
-use Ubermuda\FeatureFlagsBundle\Listing\ListPageRequest;
-use Ubermuda\FeatureFlagsBundle\Listing\PageList;
 use Ubermuda\FeatureFlagsBundle\Repository\FeatureFlagRepository;
 use Ubermuda\FeatureFlagsBundle\Security\FeatureFlagVoter;
 
@@ -20,6 +20,7 @@ final class ListFeatureFlagsController extends AbstractController
 
     public function __construct(
         private readonly FeatureFlagRepository $featureFlags,
+        private readonly ListPagePagination $pagination,
     ) {
     }
 
@@ -44,21 +45,23 @@ final class ListFeatureFlagsController extends AbstractController
             tag: $tag,
         );
         $total = count($paginator);
-        $totalPages = max(1, (int) ceil($total / self::PER_PAGE));
 
-        if ($listRequest->page > $totalPages) {
+        $clampedPage = $this->pagination->clampPage('feature_flags', $listRequest->page, $total, self::PER_PAGE, $filters);
+        if (null !== $clampedPage) {
             return $this->redirectToRoute(
                 'ubermuda_feature_flags_list',
-                [...$request->query->all(), 'page' => $totalPages],
+                [...$request->query->all(), 'page' => $clampedPage],
             );
         }
+
+        $totalPages = max(1, (int) ceil($total / self::PER_PAGE));
 
         return $this->render('@UbermudaFeatureFlags/admin/list.html.twig', [
             'flags' => $paginator,
             'total' => $total,
             'page' => $listRequest->page,
             'totalPages' => $totalPages,
-            'pageList' => PageList::build($listRequest->page, $totalPages),
+            'pageList' => $this->pagination->buildPageList($listRequest->page, $totalPages),
             'allTags' => $this->featureFlags->findAllTags(),
             'activeTag' => '' !== $tag ? $tag : null,
             'sort' => $listRequest->sort,

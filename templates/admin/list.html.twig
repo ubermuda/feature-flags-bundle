@@ -1,97 +1,125 @@
-{% extends '@UbermudaFeatureFlags/base.html.twig' %}
+{% extends '@UbermudaAdmin/base.html.twig' %}
 
-{% set type_cases = enum('Ubermuda\\FeatureFlagsBundle\\Enum\\FeatureFlagType').cases() %}
-
-{% macro sort_link(label, column, sort, dir, filters) %}
-    {% set next_dir = (sort == column and dir == 'asc') ? 'desc' : 'asc' %}
-    {% set arrow = sort == column ? (dir == 'asc' ? ' ▲' : ' ▼') : '' %}
-    <a href="{{ path('ubermuda_feature_flags_list', filters|merge({ sort: column, dir: next_dir })) }}">{{ label }}{{ arrow }}</a>
-{% endmacro %}
-
-{% block title %}Feature flags{% endblock %}
+{% block title %}Feature Flags — Admin{% endblock %}
 
 {% block body %}
-    <h1>Feature flags</h1>
+    <twig:UbermudaAdmin:AdminList
+        title="Feature Flags"
+        :total="total"
+        unitLabel="flag"
+        unitLabelPlural="flags"
+        frameId="flags-table"
+        :filters="filters"
+        route="ubermuda_feature_flags_list"
+        :page="page"
+        :totalPages="totalPages"
+        :pageList="pageList"
+        sort="{{ sort }}"
+        dir="{{ dir }}"
+        tableClass="admin-table"
+        emptyLabel="No feature flags found."
+    >
+        <twig:block name="header_actions">
+            <div class="flex items-center gap-3">
+                <a href="{{ path('ubermuda_feature_flags_scan') }}" class="admin-button-secondary admin-button-small">Scan for undefined</a>
+                <a href="{{ path('ubermuda_feature_flags_create') }}" class="admin-button admin-button-small">New flag</a>
+            </div>
+        </twig:block>
 
-    <p>
-        <a href="{{ path('ubermuda_feature_flags_create') }}">New flag</a>
-        &middot;
-        <a href="{{ path('ubermuda_feature_flags_scan') }}">Scan</a>
-    </p>
+        <twig:block name="filter_bar">
+            <twig:UbermudaAdmin:AdminListFilterBar
+                route="ubermuda_feature_flags_list"
+                frameId="flags-table"
+                searchPlaceholder="Search by name…"
+                :filters="filters"
+                sort="{{ sort }}"
+                dir="{{ dir }}"
+            >
+                <twig:block name="filter_fields">
+                    <select name="type" data-action="change->autosearch#search" class="admin-field-input admin-field-select !w-auto shrink-0">
+                        <option value="" {{ (filters.type ?? '') == '' ? 'selected' : '' }}>All types</option>
+                        <option value="bool"   {{ (filters.type ?? '') == 'bool' ? 'selected' : '' }}>bool</option>
+                        <option value="int"    {{ (filters.type ?? '') == 'int' ? 'selected' : '' }}>int</option>
+                        <option value="select" {{ (filters.type ?? '') == 'select' ? 'selected' : '' }}>select</option>
+                    </select>
+                    {% if allTags is not empty %}
+                        <select name="tag" data-action="change->autosearch#search" class="admin-field-input admin-field-select !w-auto shrink-0">
+                            <option value="">All tags</option>
+                            {% for tag in allTags %}
+                                <option value="{{ tag }}" {{ activeTag == tag ? 'selected' : '' }}>{{ tag }}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
+                </twig:block>
+            </twig:UbermudaAdmin:AdminListFilterBar>
+        </twig:block>
 
-    <form method="get" action="{{ path('ubermuda_feature_flags_list') }}">
-        <input type="search" name="q" value="{{ filters.q ?? '' }}" placeholder="Search name…">
-        <select name="type">
-            <option value="">Any type</option>
-            {% for case in type_cases %}
-                <option value="{{ case.value }}" {{ (filters.type ?? '') == case.value ? 'selected' : '' }}>{{ case.name }}</option>
-            {% endfor %}
-        </select>
-        <select name="tag">
-            <option value="">Any tag</option>
-            {% for tag in allTags %}
-                <option value="{{ tag }}" {{ activeTag == tag ? 'selected' : '' }}>{{ tag }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Filter</button>
-    </form>
-
-    <table>
-        <thead>
+        <twig:block name="thead">
             <tr>
-                <th>{{ _self.sort_link('Name', 'name', sort, dir, filters) }}</th>
-                <th>{{ _self.sort_link('Type', 'type', sort, dir, filters) }}</th>
+                <th><twig:UbermudaAdmin:AdminListSortLink route="ubermuda_feature_flags_list" column="name" label="Name" :currentSort="sort" :currentDir="dir" :filters="filters" /></th>
+                <th><twig:UbermudaAdmin:AdminListSortLink route="ubermuda_feature_flags_list" column="type" label="Type" :currentSort="sort" :currentDir="dir" :filters="filters" /></th>
                 <th>Value</th>
                 <th>Tags</th>
                 <th>Actions</th>
             </tr>
-        </thead>
-        <tbody>
+        </twig:block>
+
+        <twig:block name="tbody">
             {% for flag in flags %}
                 <tr>
-                    <td>{{ flag.name }}</td>
-                    <td>{{ flag.type.value }}</td>
+                    <td class="font-mono text-xs">{{ flag.name }}</td>
+                    <td>
+                        <span class="admin-badge admin-badge-neutral">{{ flag.type.value }}</span>
+                    </td>
                     <td>
                         {% if flag.type.value == 'bool' %}
-                            <form method="post" action="{{ path('ubermuda_feature_flags_toggle', { id: flag.id }) }}">
-                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('feature_flag_toggle') }}">
-                                <input type="hidden" name="returnTo" value="{{ app.request.requestUri }}">
-                                <button type="submit">{{ flag.value ? 'Disable' : 'Enable' }}</button>
-                            </form>
+                            {% if flag.value %}
+                                <span class="admin-badge admin-badge-on">Enabled</span>
+                            {% else %}
+                                <span class="admin-badge admin-badge-neutral">Disabled</span>
+                            {% endif %}
                         {% else %}
-                            {{ flag.value }}
+                            <span class="font-mono text-xs">{{ flag.value }}</span>
                         {% endif %}
                     </td>
-                    <td>{{ flag.tags|join(', ') }}</td>
                     <td>
-                        <a href="{{ path('ubermuda_feature_flags_edit', { id: flag.id, returnTo: app.request.requestUri }) }}">Edit</a>
-                        &middot;
-                        <form method="post" action="{{ path('ubermuda_feature_flags_delete', { id: flag.id }) }}" style="display:inline" onsubmit="return confirm('Delete this flag?')">
-                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('feature_flag_delete') }}">
-                            <input type="hidden" name="returnTo" value="{{ app.request.requestUri }}">
-                            <button type="submit">Delete</button>
-                        </form>
+                        {% for tag in flag.tags %}
+                            <span class="admin-badge admin-badge-neutral">{{ tag }}</span>
+                        {% else %}
+                            <span class="text-slate-300 text-xs">—</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <div class="flex items-center justify-end gap-1">
+                            {% if flag.type.value == 'bool' %}
+                                <form method="post" action="{{ path('ubermuda_feature_flags_toggle', {id: flag.id}) }}" class="inline" data-turbo-frame="_top">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('feature_flag_toggle') }}">
+                                    <input type="hidden" name="returnTo" value="{{ app.request.requestUri }}">
+                                    <button type="submit" class="admin-button-secondary admin-button-small">
+                                        {% if flag.value %}Disable{% else %}Enable{% endif %}
+                                    </button>
+                                </form>
+                            {% endif %}
+                            <a href="{{ path('ubermuda_feature_flags_edit', {id: flag.id, returnTo: app.request.requestUri}) }}" data-turbo-frame="_top" class="admin-button-secondary admin-button-small">Edit</a>
+                            <div data-controller="modal">
+                                <button type="button" data-action="click->modal#open" class="admin-button-danger admin-button-small">Delete</button>
+                                <dialog data-modal-target="dialog" class="admin-dialog-box">
+                                    <h3 class="admin-dialog-title">Delete feature flag "{{ flag.name }}"?</h3>
+                                    <p class="admin-dialog-body">This action cannot be undone.</p>
+                                    <div class="admin-dialog-actions">
+                                        <button type="button" data-action="click->modal#close" class="admin-button-secondary">Cancel</button>
+                                        <form method="post" action="{{ path('ubermuda_feature_flags_delete', {id: flag.id}) }}" data-turbo-frame="_top">
+                                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('feature_flag_delete') }}">
+                                            <input type="hidden" name="returnTo" value="{{ app.request.requestUri }}">
+                                            <button type="submit" class="admin-button-danger">Delete flag</button>
+                                        </form>
+                                    </div>
+                                </dialog>
+                            </div>
+                        </div>
                     </td>
                 </tr>
-            {% else %}
-                <tr><td colspan="5">No feature flags found.</td></tr>
             {% endfor %}
-        </tbody>
-    </table>
-
-    {% if totalPages > 1 %}
-        <nav aria-label="Pagination">
-            {% for entry in pageList %}
-                {% if entry == '…' %}
-                    <span>…</span>
-                {% elseif entry == page %}
-                    <strong>{{ entry }}</strong>
-                {% else %}
-                    <a href="{{ path('ubermuda_feature_flags_list', filters|merge({ sort: sort, dir: dir, page: entry })) }}">{{ entry }}</a>
-                {% endif %}
-            {% endfor %}
-        </nav>
-    {% endif %}
-
-    <p>{{ total }} flag(s).</p>
+        </twig:block>
+    </twig:UbermudaAdmin:AdminList>
 {% endblock %}

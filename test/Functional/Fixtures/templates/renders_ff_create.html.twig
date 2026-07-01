@@ -1,0 +1,5 @@
+{% extends '@UbermudaFeatureFlags/admin/create.html.twig' %}
+
+{# importmap() is intentionally not wired in the test kernel; override the block
+   to empty so the admin base can render without calling it. #}
+{% block importmap %}{% endblock %}

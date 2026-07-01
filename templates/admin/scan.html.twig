@@ -1,44 +1,83 @@
-{% extends '@UbermudaFeatureFlags/base.html.twig' %}
+{% extends '@UbermudaAdmin/base.html.twig' %}
 
-{% block title %}Scan feature flags{% endblock %}
+{% block title %}Feature Flags Scan — Admin{% endblock %}
 
 {% block body %}
-    <h1>Scan feature flags</h1>
+    <div class="admin-page">
+        <div class="flex items-start justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Feature Flags Scan</h1>
+                <p class="text-slate-500 text-sm mt-0.5">Checks code references against the database.</p>
+            </div>
+            <a href="{{ path('ubermuda_feature_flags_list') }}" class="admin-button-secondary admin-button-small shrink-0">Back to flags</a>
+        </div>
 
-    <p><a href="{{ path('ubermuda_feature_flags_list') }}">Back to list</a></p>
+        <div class="flex flex-col gap-3">
+            <div>
+                <h2 class="text-base font-bold text-slate-900">Undefined</h2>
+                <p class="text-slate-500 text-sm mt-0.5">Referenced in code but not created in the database.</p>
+            </div>
+            {% if undefined_flags is empty %}
+                <p class="text-slate-400 text-sm">None.</p>
+            {% else %}
+                <div class="admin-card overflow-hidden">
+                    <table class="admin-table">
+                        <tbody>
+                            {% for name in undefined_flags %}
+                                <tr>
+                                    <td class="font-mono text-xs">{{ name }}</td>
+                                    <td>
+                                        <div class="flex justify-end">
+                                            <a href="{{ path('ubermuda_feature_flags_create', {name: name}) }}" class="admin-button-secondary admin-button-small">Create</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
 
-    <h2>Referenced but undefined ({{ undefined_flags|length }})</h2>
-    {% if undefined_flags is empty %}
-        <p>None — every referenced flag exists.</p>
-    {% else %}
-        <ul>
-            {% for name in undefined_flags %}
-                <li>
-                    {{ name }}
-                    <a href="{{ path('ubermuda_feature_flags_create', { name: name }) }}">Create</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-
-    <h2>Defined but orphaned ({{ orphan_flags|length }})</h2>
-    {% if orphan_flags is empty %}
-        <p>None — every stored flag is referenced.</p>
-    {% else %}
-        <form method="post" action="{{ path('ubermuda_feature_flags_delete_orphaned') }}">
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('feature_flag_delete_orphaned') }}">
-            <ul>
-                {% for name in orphan_flags %}
-                    <li>
-                        <label>
-                            <input type="checkbox" name="names[]" value="{{ name }}">
-                            {{ name }}
-                        </label>
-                    </li>
-                {% endfor %}
-            </ul>
-            <p><small>Leave all unchecked to delete every orphaned flag.</small></p>
-            <button type="submit">Delete selected orphaned flags</button>
-        </form>
-    {% endif %}
+        <div class="flex flex-col gap-3">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900">Orphaned</h2>
+                    <p class="text-slate-500 text-sm mt-0.5">Exist in the database but not referenced in code.</p>
+                </div>
+                {% if orphan_flags is not empty %}
+                    <form method="post" action="{{ path('ubermuda_feature_flags_delete_orphaned') }}">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('feature_flag_delete_orphaned') }}">
+                        <button type="submit" class="admin-button-danger admin-button-small">Delete all orphaned</button>
+                    </form>
+                {% endif %}
+            </div>
+            {% if orphan_flags is empty %}
+                <p class="text-slate-400 text-sm">None.</p>
+            {% else %}
+                <form method="post" action="{{ path('ubermuda_feature_flags_delete_orphaned') }}">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('feature_flag_delete_orphaned') }}">
+                    <div class="admin-card overflow-hidden">
+                        <table class="admin-table">
+                            <tbody>
+                                {% for name in orphan_flags %}
+                                    <tr>
+                                        <td>
+                                            <label class="flex items-center gap-2 cursor-pointer">
+                                                <input type="checkbox" name="names[]" value="{{ name }}" class="rounded border-slate-300">
+                                                <span class="font-mono text-xs">{{ name }}</span>
+                                            </label>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="flex justify-end mt-3">
+                        <button type="submit" class="admin-button-danger admin-button-small">Delete selected</button>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}
