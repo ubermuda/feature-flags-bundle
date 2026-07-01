@@ -82,9 +82,9 @@ change.
 
 ### CSRF
 
-The toggle and prune-orphaned actions are hand-rolled forms guarded by
+The toggle, delete, and prune-orphaned actions are hand-rolled POST forms guarded by
 `ubermuda/symfony-extra`'s `#[CsrfToken]` (stateless). The bundle auto-registers their
-token ids (`feature_flag_toggle`, `feature_flag_delete_orphaned`) under
+token ids (`feature_flag_toggle`, `feature_flag_delete`, `feature_flag_delete_orphaned`) under
 `framework.csrf_protection.stateless_token_ids`, so no app config is needed — but
 `ubermuda/symfony-extra`'s bundle must be registered in your app for the validating
 listener to run.

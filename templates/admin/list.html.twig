@@ -66,7 +66,11 @@
                     <td>
                         <a href="{{ path('ubermuda_feature_flags_edit', { id: flag.id, returnTo: app.request.requestUri }) }}">Edit</a>
                         &middot;
-                        <a href="{{ path('ubermuda_feature_flags_delete', { id: flag.id, returnTo: app.request.requestUri }) }}">Delete</a>
+                        <form method="post" action="{{ path('ubermuda_feature_flags_delete', { id: flag.id }) }}" style="display:inline" onsubmit="return confirm('Delete this flag?')">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('feature_flag_delete') }}">
+                            <input type="hidden" name="returnTo" value="{{ app.request.requestUri }}">
+                            <button type="submit">Delete</button>
+                        </form>
                     </td>
                 </tr>
             {% else %}
