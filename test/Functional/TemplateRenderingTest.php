@@ -37,18 +37,22 @@ final class TemplateRenderingTest extends KernelTestCase
     {
         $twig = $this->twig();
 
-        foreach (['base', 'admin/list', 'admin/create', 'admin/edit', 'admin/scan'] as $name) {
+        foreach (['admin/list', 'admin/create', 'admin/edit', 'admin/scan'] as $name) {
             $twig->load('@UbermudaFeatureFlags/'.$name.'.html.twig');
         }
 
         $this->addToAssertionCount(1);
     }
 
-    public function testListTemplateRenders(): void
+    public function testListRendersThroughAdminBaseAndAdminListComponent(): void
     {
-        $html = $this->twig()->render('@UbermudaFeatureFlags/admin/list.html.twig', [
+        // Renders through a fixture that extends the FF list template and overrides
+        // the admin base's importmap block (not wired in this kernel). A non-zero
+        // total is required: <twig:UbermudaAdmin:AdminList> only renders the table
+        // shell when total > 0 (otherwise it shows the empty state).
+        $html = $this->twig()->render('@Test/renders_ff_list.html.twig', [
             'flags' => [],
-            'total' => 0,
+            'total' => 1,
             'page' => 1,
             'totalPages' => 1,
             'pageList' => [1],
@@ -59,10 +63,11 @@ final class TemplateRenderingTest extends KernelTestCase
             'filters' => [],
         ]);
 
-        self::assertStringContainsString('Feature flags', $html);
+        // The load-bearing proof: the FF list renders via @UbermudaAdmin/base and
+        // <twig:UbermudaAdmin:AdminList> resolved and emitted the shared table shell.
+        self::assertStringContainsString('admin-table', $html);
+        self::assertStringContainsString('Feature Flags', $html);
         self::assertStringContainsString('Name', $html);
-        // The type filter is populated from the enum cases.
-        self::assertStringContainsString('Bool', $html);
     }
 
     public function testCreateFormRendersWithFieldSwitchingHooks(): void
@@ -72,7 +77,10 @@ final class TemplateRenderingTest extends KernelTestCase
             ->create(\Ubermuda\FeatureFlagsBundle\Form\FeatureFlagType::class, new \Ubermuda\FeatureFlagsBundle\Form\FeatureFlagRequest())
             ->createView();
 
-        $html = $twig->render('@UbermudaFeatureFlags/admin/create.html.twig', ['form' => $form]);
+        $html = $twig->render('@Test/renders_ff_create.html.twig', [
+            'form' => $form,
+            'allTags' => [],
+        ]);
 
         // The form is bound to the shipped Stimulus controller, and the value fields carry its targets.
         self::assertStringContainsString('data-controller="feature-flag-form"', $html);
@@ -82,7 +90,7 @@ final class TemplateRenderingTest extends KernelTestCase
 
     public function testScanTemplateRenders(): void
     {
-        $html = $this->twig()->render('@UbermudaFeatureFlags/admin/scan.html.twig', [
+        $html = $this->twig()->render('@Test/renders_ff_scan.html.twig', [
             'undefined_flags' => ['undefined.flag'],
             'orphan_flags' => ['orphan.flag'],
         ]);

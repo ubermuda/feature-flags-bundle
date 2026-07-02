@@ -1,20 +1,69 @@
-{% extends '@UbermudaFeatureFlags/base.html.twig' %}
+{% extends '@UbermudaAdmin/base.html.twig' %}
 
-{% block title %}Edit {{ flag.name }}{% endblock %}
+{% block title %}Edit Feature Flag — Admin{% endblock %}
 
 {% block body %}
-    {% set returnTo = app.request.query.get('returnTo') %}
-    {% set backUrl = (returnTo and returnTo starts with '/') ? returnTo : path('ubermuda_feature_flags_list') %}
+    <div class="admin-page">
+        <div class="flex items-start justify-between">
+            <h1 class="text-2xl font-bold text-slate-900">Edit Feature Flag</h1>
+            {% set returnTo = app.request.query.get('returnTo') %}
+            <a href="{{ (returnTo and returnTo starts with '/admin/') ? returnTo : path('ubermuda_feature_flags_list') }}" class="admin-button-secondary admin-button-small shrink-0">Back to flags</a>
+        </div>
 
-    <h1>Edit feature flag: {{ flag.name }}</h1>
+        <div class="admin-card p-8 flex flex-col gap-6">
+            <div class="admin-form">
+            {{ form_start(form, {attr: {'data-controller': 'feature-flag-form'}}) }}
+            <div class="form">
+                {{ form_row(form.name) }}
+                {{ form_row(form.type) }}
+                {{ form_row(form.boolValue) }}
+                {{ form_row(form.intValue) }}
+                {{ form_row(form.options) }}
+                {{ form_row(form.selectValue) }}
 
-    {{ form_start(form, { attr: { 'data-controller': 'feature-flag-form' } }) }}
-        {{ form_widget(form) }}
-    {{ form_end(form) }}
+                {# JSON data for the Stimulus tag-input controller — avoids large data attributes #}
+                <script type="application/json" id="tag-input-data">{{ allTags|json_encode|raw }}</script>
 
-    <p>
-        <a href="{{ backUrl }}">Back to list</a>
-        &middot;
-        <a href="{{ path('ubermuda_feature_flags_delete', { id: flag.id, returnTo: backUrl }) }}">Delete</a>
-    </p>
+                <div
+                    data-controller="tag-input"
+                    class="flex flex-col gap-1.5"
+                >
+                    {# hidden field managed by the Stimulus controller; must be inside the controller element #}
+                    {{ form_widget(form.tags, {attr: {'data-tag-input-target': 'field'}}) }}
+
+                    <label class="admin-field-label">Tags</label>
+
+                    {# pill box wrapper — mimics an input #}
+                    <div
+                        class="flex flex-wrap gap-1.5 min-h-[2.5rem] p-1.5 rounded-xl border border-slate-200 bg-white cursor-text focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500"
+                        data-action="click->tag-input#open"
+                    >
+                        <div data-tag-input-pill-container class="contents"></div>
+                        <input
+                            type="text"
+                            class="flex-1 min-w-[8rem] border-none outline-none bg-transparent text-sm placeholder:text-slate-400 px-1"
+                            placeholder="Add tags…"
+                            data-tag-input-target="input"
+                            data-action="input->tag-input#filter focus->tag-input#open keydown->tag-input#addFromInput"
+                        >
+                    </div>
+
+                    {# autocomplete dropdown #}
+                    <div data-tag-input-target="dropdown" class="relative hidden">
+                        <div
+                            class="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto p-1"
+                            data-tag-input-target="suggestions"
+                        ></div>
+                    </div>
+                </div>
+
+                <div class="admin-form-actions">
+                    <a href="{{ (returnTo and returnTo starts with '/admin/') ? returnTo : path('ubermuda_feature_flags_list') }}" class="admin-button-secondary mr-auto">Cancel</a>
+                    {{ form_widget(form.save, {attr: {class: 'admin-button'}}) }}
+                </div>
+            </div>
+            {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
 {% endblock %}

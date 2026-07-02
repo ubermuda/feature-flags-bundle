@@ -1,9 +1,13 @@
 {
     "name": "ubermuda/feature-flags-bundle",
-    "description": "Database-backed feature flags for Symfony, with a self-contained admin UI.",
+    "description": "Database-backed feature flags for Symfony, with an admin UI built on ubermuda/admin-bundle.",
     "type": "symfony-bundle",
     "license": "proprietary",
     "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/ubermuda/admin-bundle"
+        },
         {
             "type": "vcs",
             "url": "https://github.com/ubermuda/symfony-extra"
@@ -22,6 +26,7 @@
         "symfony/translation": "^7.2|^8.0",
         "symfony/twig-bundle": "^7.2|^8.0",
         "twig/twig": "^3.10",
+        "ubermuda/admin-bundle": "dev-main@dev",
         "ubermuda/symfony-extra": "dev-main@dev"
     },
     "require-dev": {

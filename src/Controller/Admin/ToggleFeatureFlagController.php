@@ -9,7 +9,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Ubermuda\FeatureFlagsBundle\Command\ToggleFeatureFlagCommand;
 use Ubermuda\FeatureFlagsBundle\Command\ToggleFeatureFlagHandler;
 use Ubermuda\FeatureFlagsBundle\Entity\FeatureFlag;
-use Ubermuda\FeatureFlagsBundle\Listing\AdminReturnTo;
+use Ubermuda\AdminBundle\Listing\AdminReturnTo;
 use Ubermuda\FeatureFlagsBundle\Security\FeatureFlagVoter;
 use Ubermuda\SymfonyExtra\Csrf\Attribute\CsrfToken;
 
@@ -27,7 +27,7 @@ final class ToggleFeatureFlagController extends AbstractController
     {
         ($this->toggleFeatureFlag)(new ToggleFeatureFlagCommand($flag));
 
-        $validatedReturnTo = $this->returnTo->validate($request->request->get('returnTo'));
+        $validatedReturnTo = $this->returnTo->validate('feature_flag', $request->request->get('returnTo'));
 
         return $this->redirect($validatedReturnTo ?? $this->generateUrl('ubermuda_feature_flags_list'));
     }
