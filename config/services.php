@@ -15,6 +15,7 @@ return static function (Symfony\Component\DependencyInjection\Loader\Configurato
 
     $services->load('Ubermuda\\FeatureFlagsBundle\\', __DIR__.'/../src/')
         ->exclude([
+            __DIR__.'/../src/Attribute/',
             __DIR__.'/../src/Entity/',
             __DIR__.'/../src/Dto/',
             __DIR__.'/../src/Enum/',
