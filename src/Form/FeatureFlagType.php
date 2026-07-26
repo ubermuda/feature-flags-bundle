@@ -44,6 +44,11 @@ class FeatureFlagType extends AbstractType
                 'required' => false,
                 'row_attr' => ['data-feature-flag-form-target' => 'intField'],
             ])
+            ->add('stringValue', TextType::class, [
+                'label' => 'Value',
+                'required' => false,
+                'row_attr' => ['data-feature-flag-form-target' => 'stringField'],
+            ])
             ->add('options', TextareaType::class, [
                 'label' => 'Options (one per line)',
                 'required' => false,

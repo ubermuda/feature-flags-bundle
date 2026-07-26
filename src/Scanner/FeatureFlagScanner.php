@@ -7,11 +7,21 @@ use Symfony\Component\Finder\Finder;
 readonly class FeatureFlagScanner
 {
     // Match the flag name as the first string argument, ignoring any trailing
-    // arguments. The trailing `)` is deliberately NOT required: isEnabled() and
-    // getIntValue() take a default as a second argument, and requiring the close
-    // paren would silently miss every such call (and flag those flags as orphaned).
+    // arguments. The trailing `)` is deliberately NOT required: isEnabled(),
+    // getIntValue() and getStringValue() take a default as a second argument,
+    // and requiring the close paren would silently miss every such call.
     private const string TWIG_PATTERN = "/(?:is_feature_enabled|feature_flag_value)\\(\\s*['\"]([^'\"]+)['\"]/";
-    private const string PHP_PATTERN = "/->(?:isEnabled|getValue|getIntValue)\\(\\s*['\"]([^'\"]+)['\"]/";
+    private const string PHP_PATTERN = "/->(?:isEnabled|getValue|getIntValue|getStringValue)\\(\\s*['\"]([^'\"]+)['\"]/";
+
+    // First argument given as a class-constant reference instead of a literal.
+    // The class token matches any identifier, including self/static/parent. The
+    // constant's value is resolved against every `const X = 'literal'` definition
+    // collected from the scanned files; unresolvable references are skipped
+    // rather than guessed. A const name defined in several classes contributes
+    // all its values — deliberately over-inclusive: a false extra reference can
+    // only prevent an orphan deletion, never cause one.
+    private const string PHP_CONST_CALL_PATTERN = "/->(?:isEnabled|getValue|getIntValue|getStringValue)\\(\\s*[A-Za-z_\\\\][A-Za-z0-9_\\\\]*::([A-Z][A-Z0-9_]*)/";
+    private const string PHP_CONST_DEF_PATTERN = "/const\\s+(?:string\\s+)?([A-Z][A-Z0-9_]*)\\s*=\\s*['\"]([^'\"]+)['\"]/";
 
     /**
      * @param list<string> $scanPaths Directories scanned for referenced flag names
@@ -34,12 +44,35 @@ readonly class FeatureFlagScanner
             return [];
         }
 
+        $phpContents = [];
         $names = [];
 
         foreach ($this->files($existing) as $file) {
-            $pattern = 'twig' === $file->getExtension() ? self::TWIG_PATTERN : self::PHP_PATTERN;
-            preg_match_all($pattern, $file->getContents(), $matches);
+            if ('twig' === $file->getExtension()) {
+                preg_match_all(self::TWIG_PATTERN, $file->getContents(), $matches);
+                array_push($names, ...$matches[1]);
+                continue;
+            }
+
+            $phpContents[] = $file->getContents();
+        }
+
+        $constants = [];
+        foreach ($phpContents as $content) {
+            preg_match_all(self::PHP_CONST_DEF_PATTERN, $content, $defs, PREG_SET_ORDER);
+            foreach ($defs as $def) {
+                $constants[$def[1]][] = $def[2];
+            }
+        }
+
+        foreach ($phpContents as $content) {
+            preg_match_all(self::PHP_PATTERN, $content, $matches);
             array_push($names, ...$matches[1]);
+
+            preg_match_all(self::PHP_CONST_CALL_PATTERN, $content, $refs);
+            foreach ($refs[1] as $constName) {
+                array_push($names, ...($constants[$constName] ?? []));
+            }
         }
 
         $names = array_unique($names);

@@ -33,6 +33,7 @@ final class CreateFeatureFlagController extends AbstractController
             $value = match ($flagRequest->type) {
                 FeatureFlagType::Bool => $flagRequest->boolValue ?? false,
                 FeatureFlagType::Int => $flagRequest->intValue ?? 0,
+                FeatureFlagType::String => $flagRequest->stringValue ?? '',
                 FeatureFlagType::Select => $flagRequest->selectValue,
             };
             $options = FeatureFlagType::Select === $flagRequest->type ? $flagRequest->options : null;

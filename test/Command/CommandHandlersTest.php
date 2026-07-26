@@ -115,7 +115,7 @@ final class CommandHandlersTest extends TestCase
     public function testDeleteOrphanedRemovesUnreferencedFlags(): void
     {
         $base = __DIR__.'/../Fixtures/scan';
-        // The fixtures reference: alpha, beta, delta, gamma.
+        // The fixtures reference: alpha, beta, delta, epsilon, eta, gamma, zeta.
         $scanner = new FeatureFlagScanner([$base.'/templates', $base.'/src']);
 
         $alpha = new FeatureFlag('alpha', FeatureFlagType::Bool, true);
