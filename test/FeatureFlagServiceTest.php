@@ -58,6 +58,20 @@ final class FeatureFlagServiceTest extends TestCase
         self::assertTrue($logger->hasErrorRecords());
     }
 
+    public function testGetStringValueReadsAndFallsBack(): void
+    {
+        [$service, $logger] = $this->service(
+            new ResolvedFlag('label', FeatureFlagType::String, 'hello'),
+            new ResolvedFlag('flagged', FeatureFlagType::Bool, true),
+        );
+
+        self::assertSame('hello', $service->getStringValue('label', 'fallback'));
+        self::assertSame('fallback', $service->getStringValue('missing', 'fallback'));
+        self::assertSame('', $service->getStringValue('missing'));
+        self::assertSame('fallback', $service->getStringValue('flagged', 'fallback'));
+        self::assertTrue($logger->hasErrorRecords());
+    }
+
     public function testGetValueReturnsRawValueOrNull(): void
     {
         [$service] = $this->service(new ResolvedFlag('choice', FeatureFlagType::Select, 'b'));

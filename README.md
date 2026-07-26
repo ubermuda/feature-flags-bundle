@@ -2,7 +2,7 @@
 
 Database-backed feature flags for Symfony, with a self-contained admin UI.
 
-Flags have a type — **bool**, **int**, or **select** (one value from a fixed list)
+Flags have a type — **bool**, **int**, **string**, or **select** (one value from a fixed list)
 — optional **tags**, and are read at runtime through a small service or two Twig
 functions. A bundled admin UI lists, creates, edits, toggles, and prunes flags, and
 can scan your code for referenced-but-undefined (and defined-but-orphaned) flags.
@@ -101,12 +101,17 @@ public function __construct(private FeatureFlagService $featureFlags) {}
 if ($this->featureFlags->isEnabled('poll.suggestions.enabled')) { /* ... */ }
 
 $limit = $this->featureFlags->getIntValue('rsvp.max_guests', 10);
+$url = $this->featureFlags->getStringValue('billing.survey_url', 'https://example.com');
 $style = $this->featureFlags->getValue('rsvp.nudge.style'); // select flag
 ```
 
 A flag missing from the database returns the supplied default (`false` / the given
-int / `null`). Reading a flag with the wrong accessor for its type logs an error and
-returns the default.
+int / the given string, `''` if omitted / `null`). Reading a flag with the wrong
+accessor for its type logs an error and returns the default.
+
+The scanner recognises flag names passed as string literals and as class-constant
+references (`self::SOME_FLAG`, `Foo::SOME_FLAG`) whose `const X = 'literal'`
+definition appears in any scanned PHP file.
 
 ### Twig
 

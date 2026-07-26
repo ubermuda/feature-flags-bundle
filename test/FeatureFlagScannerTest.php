@@ -13,8 +13,10 @@ final class FeatureFlagScannerTest extends TestCase
         $scanner = new FeatureFlagScanner([$base.'/templates', $base.'/src']);
 
         // Includes 'delta' from getIntValue('delta', 0) and 'gamma' from
-        // isEnabled('gamma', true) — both two-argument calls.
-        self::assertSame(['alpha', 'beta', 'delta', 'gamma'], $scanner->findReferencedFlags());
+        // isEnabled('gamma', true) — both two-argument calls — plus 'zeta' from
+        // getStringValue('zeta', '') and 'epsilon', referenced only through a
+        // class constant (self::EPSILON_FLAG / Sample::EPSILON_FLAG).
+        self::assertSame(['alpha', 'beta', 'delta', 'epsilon', 'gamma', 'zeta'], $scanner->findReferencedFlags());
     }
 
     public function testReturnsEmptyWhenNoPathsExist(): void

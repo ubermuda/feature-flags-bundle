@@ -14,6 +14,7 @@ class FeatureFlagRequest
         public FeatureFlagType $type = FeatureFlagType::Bool,
         public ?bool $boolValue = null,
         public ?int $intValue = null,
+        public ?string $stringValue = null,
         public ?string $selectValue = null,
         /** @var list<string> */
         public array $options = [],
@@ -29,6 +30,7 @@ class FeatureFlagRequest
             type: $flag->type,
             boolValue: FeatureFlagType::Bool === $flag->type ? (bool) $flag->value : null,
             intValue: FeatureFlagType::Int === $flag->type ? (int) $flag->value : null,
+            stringValue: FeatureFlagType::String === $flag->type && is_string($flag->value) ? $flag->value : null,
             selectValue: FeatureFlagType::Select === $flag->type && is_string($flag->value) ? $flag->value : null,
             options: $flag->options ?? [],
             tags: $flag->tags,

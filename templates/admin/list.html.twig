@@ -40,6 +40,7 @@
                         <option value="" {{ (filters.type ?? '') == '' ? 'selected' : '' }}>All types</option>
                         <option value="bool"   {{ (filters.type ?? '') == 'bool' ? 'selected' : '' }}>bool</option>
                         <option value="int"    {{ (filters.type ?? '') == 'int' ? 'selected' : '' }}>int</option>
+                        <option value="string" {{ (filters.type ?? '') == 'string' ? 'selected' : '' }}>string</option>
                         <option value="select" {{ (filters.type ?? '') == 'select' ? 'selected' : '' }}>select</option>
                     </select>
                     {% if allTags is not empty %}

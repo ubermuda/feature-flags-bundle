@@ -56,6 +56,27 @@ readonly class FeatureFlagService
         return is_int($flag->value) ? $flag->value : $default;
     }
 
+    public function getStringValue(string $name, string $default = ''): string
+    {
+        $flag = $this->reader->get($name);
+
+        if (null === $flag) {
+            return $default;
+        }
+
+        if (FeatureFlagType::String !== $flag->type) {
+            $this->logger->error(sprintf(
+                'Feature flag "%s" is of type "%s", not "string". Returning default value.',
+                $name,
+                $flag->type->value,
+            ));
+
+            return $default;
+        }
+
+        return is_string($flag->value) ? $flag->value : $default;
+    }
+
     public function getValue(string $name): mixed
     {
         return $this->reader->get($name)?->value;
