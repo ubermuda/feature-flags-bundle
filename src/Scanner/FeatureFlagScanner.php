@@ -14,10 +14,13 @@ readonly class FeatureFlagScanner
     private const string PHP_PATTERN = "/->(?:isEnabled|getValue|getIntValue|getStringValue)\\(\\s*['\"]([^'\"]+)['\"]/";
 
     // First argument given as a class-constant reference instead of a literal.
-    // The constant's value is resolved against every `const X = 'literal'`
-    // definition collected from the scanned files; unresolvable references are
-    // skipped rather than guessed.
-    private const string PHP_CONST_CALL_PATTERN = "/->(?:isEnabled|getValue|getIntValue|getStringValue)\\(\\s*(?:self|static|parent|[A-Za-z_\\\\][A-Za-z0-9_\\\\]*)::([A-Z][A-Z0-9_]*)/";
+    // The class token matches any identifier, including self/static/parent. The
+    // constant's value is resolved against every `const X = 'literal'` definition
+    // collected from the scanned files; unresolvable references are skipped
+    // rather than guessed. A const name defined in several classes contributes
+    // all its values — deliberately over-inclusive: a false extra reference can
+    // only prevent an orphan deletion, never cause one.
+    private const string PHP_CONST_CALL_PATTERN = "/->(?:isEnabled|getValue|getIntValue|getStringValue)\\(\\s*[A-Za-z_\\\\][A-Za-z0-9_\\\\]*::([A-Z][A-Z0-9_]*)/";
     private const string PHP_CONST_DEF_PATTERN = "/const\\s+(?:string\\s+)?([A-Z][A-Z0-9_]*)\\s*=\\s*['\"]([^'\"]+)['\"]/";
 
     /**

@@ -111,7 +111,10 @@ accessor for its type logs an error and returns the default.
 
 The scanner recognises flag names passed as string literals and as class-constant
 references (`self::SOME_FLAG`, `Foo::SOME_FLAG`) whose `const X = 'literal'`
-definition appears in any scanned PHP file.
+definition appears in any scanned PHP file. The constant must be defined as a
+single string literal inside one of the scanned paths — grouped or concatenated
+const declarations are not resolved, and flags referenced only through such
+constants would show up as orphaned.
 
 ### Twig
 

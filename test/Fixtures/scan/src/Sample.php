@@ -14,5 +14,9 @@ final class Sample
         $featureFlags->getStringValue('zeta', '');
         $featureFlags->isEnabled(self::EPSILON_FLAG);
         $featureFlags->getIntValue(Sample::EPSILON_FLAG, 0);
+        $featureFlags->isEnabled(Flags::ETA_FLAG);
+        // Never executed, only scanned: an unresolvable constant reference the
+        // scanner must skip rather than guess.
+        $featureFlags->getValue(self::UNRESOLVED_FLAG);
     }
 }
