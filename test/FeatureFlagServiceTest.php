@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use Ubermuda\FeatureFlagsBundle\Dto\ResolvedFlag;
 use Ubermuda\FeatureFlagsBundle\Enum\FeatureFlagType;
 use Ubermuda\FeatureFlagsBundle\FeatureFlagService;
+use Ubermuda\FeatureFlagsBundle\Prerequisite\FeatureFlagPrerequisites;
 use Ubermuda\FeatureFlagsBundle\Reader\InMemoryFeatureFlagReader;
 
 final class FeatureFlagServiceTest extends TestCase
@@ -78,5 +79,56 @@ final class FeatureFlagServiceTest extends TestCase
 
         self::assertSame('b', $service->getValue('choice'));
         self::assertNull($service->getValue('missing'));
+    }
+
+    /**
+     * An unsatisfied prerequisite beats everything else the read could say:
+     * a stored true, and a caller whose default is true. Both are exercised
+     * because they fail through different branches — one reads the flag, the
+     * other never finds one.
+     */
+    public function testAnUnsatisfiedPrerequisiteForcesTheFlagOff(): void
+    {
+        $prerequisites = new FeatureFlagPrerequisites(['push' => ['MISSING' => null]]);
+        $reader = new InMemoryFeatureFlagReader([new ResolvedFlag('push', FeatureFlagType::Bool, true)]);
+        $service = new FeatureFlagService($reader, new RecordingLogger(), $prerequisites);
+
+        self::assertFalse($service->isEnabled('push'));
+        self::assertFalse($service->isEnabled('push', true));
+    }
+
+    public function testAnUnsatisfiedPrerequisiteForcesOffEvenWhenNoFlagExists(): void
+    {
+        $prerequisites = new FeatureFlagPrerequisites(['push' => ['MISSING' => null]]);
+        $service = new FeatureFlagService(new InMemoryFeatureFlagReader(), new RecordingLogger(), $prerequisites);
+
+        self::assertFalse($service->isEnabled('push', true));
+    }
+
+    public function testASatisfiedPrerequisiteLeavesTheStoredValueAlone(): void
+    {
+        $prerequisites = new FeatureFlagPrerequisites(['push' => ['PRESENT' => 'value']]);
+        $reader = new InMemoryFeatureFlagReader([
+            new ResolvedFlag('push', FeatureFlagType::Bool, false),
+            new ResolvedFlag('other', FeatureFlagType::Bool, true),
+        ]);
+        $service = new FeatureFlagService($reader, new RecordingLogger(), $prerequisites);
+
+        self::assertFalse($service->isEnabled('push'));
+        self::assertTrue($service->isEnabled('other'));
+    }
+
+    /**
+     * Prerequisites are a boolean-availability concept, so they must not reach
+     * the typed readers — "unavailable" has no meaning for a string.
+     */
+    public function testPrerequisitesDoNotAffectNonBooleanReads(): void
+    {
+        $prerequisites = new FeatureFlagPrerequisites(['label' => ['MISSING' => null]]);
+        $reader = new InMemoryFeatureFlagReader([new ResolvedFlag('label', FeatureFlagType::String, 'hello')]);
+        $service = new FeatureFlagService($reader, new RecordingLogger(), $prerequisites);
+
+        self::assertSame('hello', $service->getStringValue('label'));
+        self::assertSame('hello', $service->getValue('label'));
     }
 }

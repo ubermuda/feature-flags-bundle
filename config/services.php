@@ -11,7 +11,8 @@ return static function (Symfony\Component\DependencyInjection\Loader\Configurato
     $services->defaults()
         ->autowire()
         ->autoconfigure()
-        ->bind('$scanPaths', param('ubermuda_feature_flags.scan.paths'));
+        ->bind('$scanPaths', param('ubermuda_feature_flags.scan.paths'))
+        ->bind('$requiredEnv', param('ubermuda_feature_flags.prerequisites'));
 
     $services->load('Ubermuda\\FeatureFlagsBundle\\', __DIR__.'/../src/')
         ->exclude([

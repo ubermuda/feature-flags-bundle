@@ -4,6 +4,7 @@ namespace Ubermuda\FeatureFlagsBundle;
 
 use Psr\Log\LoggerInterface;
 use Ubermuda\FeatureFlagsBundle\Enum\FeatureFlagType;
+use Ubermuda\FeatureFlagsBundle\Prerequisite\FeatureFlagPrerequisites;
 use Ubermuda\FeatureFlagsBundle\Reader\FeatureFlagReaderInterface;
 
 readonly class FeatureFlagService
@@ -11,11 +12,26 @@ readonly class FeatureFlagService
     public function __construct(
         private FeatureFlagReaderInterface $reader,
         private LoggerInterface $logger,
+        private FeatureFlagPrerequisites $prerequisites = new FeatureFlagPrerequisites(),
     ) {
     }
 
     public function isEnabled(string $name, bool $default = false): bool
     {
+        // Checked before the flag is read, and ahead of $default, because an
+        // unconfigured feature is off for everyone — including a caller whose
+        // default is true and a flag an operator has switched on.
+        $missing = $this->prerequisites->missingFor($name);
+        if ([] !== $missing) {
+            $this->logger->debug(sprintf(
+                'Feature flag "%s" is unavailable: %s not set.',
+                $name,
+                implode(', ', $missing),
+            ));
+
+            return false;
+        }
+
         $flag = $this->reader->get($name);
 
         if (null === $flag) {

@@ -16,7 +16,11 @@ use Symfony\UX\TwigComponent\TwigComponentBundle;
 use Ubermuda\AdminBundle\UbermudaAdminBundle;
 use Ubermuda\FeatureFlagsBundle\UbermudaFeatureFlagsBundle;
 
-final class FeatureFlagsTestKernel extends Kernel
+/**
+ * Not final: PrerequisiteWiringTest extends it to add extension config without
+ * duplicating this whole kernel.
+ */
+class FeatureFlagsTestKernel extends Kernel
 {
     use MicroKernelTrait;
 
