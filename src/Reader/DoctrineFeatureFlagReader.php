@@ -2,6 +2,7 @@
 
 namespace Ubermuda\FeatureFlagsBundle\Reader;
 
+use Symfony\Contracts\Service\ResetInterface;
 use Ubermuda\FeatureFlagsBundle\Dto\ResolvedFlag;
 use Ubermuda\FeatureFlagsBundle\Entity\FeatureFlag;
 use Ubermuda\FeatureFlagsBundle\Repository\FeatureFlagRepository;
@@ -9,8 +10,14 @@ use Ubermuda\FeatureFlagsBundle\Repository\FeatureFlagRepository;
 /**
  * Default reader: Doctrine-backed and request-cached. Loads every flag once,
  * mapping each entity to a {@see ResolvedFlag} so callers never touch the ORM.
+ *
+ * Resettable because "once" has to mean once per request, not once per process.
+ * A messenger worker lives for hours, so without this a flag toggled in the
+ * admin would not reach any scheduled or queued handler until the worker was
+ * recycled — a consumer would keep acting on the value it happened to read
+ * first. Symfony's services_resetter calls reset() between messages.
  */
-class DoctrineFeatureFlagReader implements FeatureFlagReaderInterface
+class DoctrineFeatureFlagReader implements FeatureFlagReaderInterface, ResetInterface
 {
     /** @var array<string, ResolvedFlag>|null */
     private ?array $cache = null;
@@ -39,5 +46,10 @@ class DoctrineFeatureFlagReader implements FeatureFlagReaderInterface
         }
 
         return $this->cache;
+    }
+
+    public function reset(): void
+    {
+        $this->cache = null;
     }
 }

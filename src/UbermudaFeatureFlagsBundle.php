@@ -17,6 +17,13 @@ class UbermudaFeatureFlagsBundle extends AbstractBundle
                     ->defaultValue('/admin/feature-flags')
                     ->info('URL prefix the admin routes are mounted under.')
                 ->end()
+                ->arrayNode('prerequisites')
+                    ->info('Environment variables a flag needs before it can be enabled at all. A flag whose variables are unset or blank reads as off, whoever set it, and the admin shows it as unavailable rather than offering a switch that does nothing. Forces off only — there is no way to force a flag on.')
+                    ->useAttributeAsKey('flag')
+                    ->arrayPrototype()
+                        ->scalarPrototype()->end()
+                    ->end()
+                ->end()
                 ->arrayNode('scan')
                     ->addDefaultsIfNotSet()
                     ->children()
@@ -37,6 +44,21 @@ class UbermudaFeatureFlagsBundle extends AbstractBundle
     {
         $builder->setParameter('ubermuda_feature_flags.route_prefix', $config['route_prefix']);
         $builder->setParameter('ubermuda_feature_flags.scan.paths', $config['scan']['paths']);
+
+        // Each required variable becomes an env placeholder rather than being
+        // read here, so the check resolves the way the rest of the application
+        // resolves configuration — .env chain, real environment or a secrets
+        // vault — and is evaluated per request rather than frozen into the
+        // compiled container. `default::` yields null for an unset variable
+        // instead of failing the build.
+        $requiredEnv = [];
+        foreach ($config['prerequisites'] as $flag => $names) {
+            foreach ($names as $name) {
+                $requiredEnv[$flag][$name] = '%env(default::'.$name.')%';
+            }
+        }
+
+        $builder->setParameter('ubermuda_feature_flags.prerequisites', $requiredEnv);
 
         $container->import('../config/services.php');
     }

@@ -70,7 +70,50 @@ ubermuda_feature_flags:
         paths:                          # directories scanned for referenced flags
             - '%kernel.project_dir%/templates'
             - '%kernel.project_dir%/src'
+    prerequisites: {}                   # env vars a flag needs — see below
 ```
+
+### Prerequisites: features that cannot work here
+
+A flag answers *should this be on?* — the operator's choice. It does not answer
+*can this work here?* A feature whose configuration is absent cannot be switched
+on by anybody, and offering a toggle for it gives the operator a switch that
+appears to work and does nothing.
+
+Declare the environment variables a feature needs, keyed by flag name:
+
+```yaml
+ubermuda_feature_flags:
+    prerequisites:
+        site_review.push.enabled: ['MERCURE_JWT_SECRET', 'MERCURE_URL']
+        billing.enabled: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET']
+```
+
+While any listed variable is unset **or blank**, `isEnabled()` returns `false`
+for that flag — ahead of the stored value *and* ahead of the caller's
+`$default`, so a flag someone switched on and a call site defaulting to `true`
+both still read as off. The admin list shows the flag as **Unavailable**, naming
+the missing variables, instead of a toggle.
+
+Three deliberate limits:
+
+- **Forces off only.** There is no way to express the other direction. A rule
+  that forced a flag *on* would override a deliberate decision to disable
+  something, with no way to override it back from the admin UI.
+- **Boolean flags only**, because it is applied in `isEnabled()`. `getValue()`,
+  `getStringValue()` and `getIntValue()` read their stored value unchanged —
+  "unavailable" has no meaning for a string.
+- **Presence, not value.** This is not a rules engine. Anything conditional on
+  what a variable *contains* belongs in your own code, where it can be tested.
+
+Values resolve as env placeholders, so whatever your application's configuration
+would see — real environment, the `.env` chain, a secrets vault — is what is
+checked, and it is read per request rather than frozen into the compiled
+container. Supplying a missing variable takes effect without a rebuild.
+
+The stored value is left alone while a flag is unavailable, so an operator can
+enable a feature before configuring it and have it come on the moment the
+configuration lands. Nothing is lost by toggling in either order.
 
 ### Authorization
 
