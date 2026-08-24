@@ -1,0 +1,48 @@
+{% use 'form_div_layout.html.twig' %}
+
+{# Rows are toggled with the `hidden` attribute by feature_flag_form_controller,
+   so the wrapper must keep block display — a flex row would need Preflight's
+   `[hidden] { display: none !important }` to win, which a consuming app may not ship. #}
+{% block form_row -%}
+    {%- set row_attr = row_attr|merge({class: ('space-y-1.5 ' ~ row_attr.class|default(''))|trim}) -%}
+    {{- parent() -}}
+{%- endblock %}
+
+{% block form_label -%}
+    {#- `block` so the row's vertical rhythm applies: an inline <label> would sit
+       beside a checkbox instead of above it, and take no top margin. -#}
+    {%- set label_attr = label_attr|merge({class: ('admin-field-label block ' ~ label_attr.class|default(''))|trim}) -%}
+    {{- parent() -}}
+{%- endblock %}
+
+{% block form_widget_simple -%}
+    {%- if (type|default('text')) not in ['checkbox', 'radio', 'hidden'] -%}
+        {%- set attr = attr|merge({class: ('admin-field-input ' ~ attr.class|default(''))|trim}) -%}
+    {%- endif -%}
+    {{- parent() -}}
+{%- endblock %}
+
+{% block textarea_widget -%}
+    {%- set attr = attr|merge({class: ('admin-field-input ' ~ attr.class|default(''))|trim}) -%}
+    {{- parent() -}}
+{%- endblock %}
+
+{% block choice_widget_collapsed -%}
+    {%- set attr = attr|merge({class: ('admin-field-input admin-field-select ' ~ attr.class|default(''))|trim}) -%}
+    {{- parent() -}}
+{%- endblock %}
+
+{% block checkbox_widget -%}
+    {%- set attr = attr|merge({class: ('admin-switch ' ~ attr.class|default(''))|trim}) -%}
+    {{- parent() -}}
+{%- endblock %}
+
+{% block form_errors -%}
+    {%- if errors|length > 0 -%}
+        <ul class="list-none p-0 m-0">
+            {%- for error in errors -%}
+                <li class="text-xs font-semibold text-red-600">{{ error.message }}</li>
+            {%- endfor -%}
+        </ul>
+    {%- endif -%}
+{%- endblock %}

@@ -86,6 +86,18 @@ final class TemplateRenderingTest extends KernelTestCase
         self::assertStringContainsString('data-controller="feature-flag-form"', $html);
         self::assertStringContainsString('data-feature-flag-form-target="typeSelect"', $html);
         self::assertStringContainsString('feature-flag-form#updateType', $html);
+
+        // Fields are themed with the AdminBundle primitives rather than the default layout.
+        self::assertStringContainsString('class="admin-field-label block"', $html);
+        self::assertStringContainsString('admin-field-input', $html);
+        self::assertStringContainsString('admin-field-select', $html);
+        self::assertStringContainsString('admin-switch', $html);
+
+        // Theming the row must not drop the row_attr the controller toggles on.
+        self::assertStringContainsString(
+            '<div data-feature-flag-form-target="boolField" class="space-y-1.5">',
+            $html,
+        );
     }
 
     public function testScanTemplateRenders(): void
