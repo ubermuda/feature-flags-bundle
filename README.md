@@ -179,6 +179,12 @@ Admin templates extend `@UbermudaFeatureFlags/base.html.twig`. Override any temp
 by placing a file at the same path under your app's
 `templates/bundles/UbermudaFeatureFlagsBundle/` directory.
 
+The create/edit form is rendered through `@UbermudaFeatureFlags/form/admin_theme.html.twig`,
+which tags fields with the AdminBundle primitive classes (`admin-field-label`,
+`admin-field-input`, `admin-field-select`) plus `admin-switch` for boolean flags. Those
+classes are the consuming app's to define — `admin-switch` is required here in addition to
+the AdminBundle contract.
+
 ### JavaScript (create/edit form)
 
 The create/edit form uses a Stimulus controller, `feature-flag-form`, to show only the
