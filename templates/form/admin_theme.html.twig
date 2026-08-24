@@ -9,7 +9,9 @@
 {%- endblock %}
 
 {% block form_label -%}
-    {%- set label_attr = label_attr|merge({class: ('admin-field-label ' ~ label_attr.class|default(''))|trim}) -%}
+    {#- `block` so the row's vertical rhythm applies: an inline <label> would sit
+       beside a checkbox instead of above it, and take no top margin. -#}
+    {%- set label_attr = label_attr|merge({class: ('admin-field-label block ' ~ label_attr.class|default(''))|trim}) -%}
     {{- parent() -}}
 {%- endblock %}
 

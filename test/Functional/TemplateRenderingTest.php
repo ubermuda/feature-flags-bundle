@@ -88,7 +88,7 @@ final class TemplateRenderingTest extends KernelTestCase
         self::assertStringContainsString('feature-flag-form#updateType', $html);
 
         // Fields are themed with the AdminBundle primitives rather than the default layout.
-        self::assertStringContainsString('class="admin-field-label"', $html);
+        self::assertStringContainsString('class="admin-field-label block"', $html);
         self::assertStringContainsString('admin-field-input', $html);
         self::assertStringContainsString('admin-field-select', $html);
         self::assertStringContainsString('admin-switch', $html);
