@@ -37,13 +37,13 @@
 
                     {# pill box wrapper — mimics an input #}
                     <div
-                        class="flex flex-wrap gap-1.5 min-h-[2.5rem] p-1.5 rounded-xl border border-slate-200 bg-white cursor-text focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500"
+                        class="flex flex-wrap gap-1.5 min-h-10 p-1.5 rounded-xl border border-slate-200 bg-white cursor-text focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500"
                         data-action="click->tag-input#open"
                     >
                         <div data-tag-input-pill-container class="contents"></div>
                         <input
                             type="text"
-                            class="flex-1 min-w-[8rem] border-none outline-none bg-transparent text-sm placeholder:text-slate-400 px-1"
+                            class="flex-1 min-w-32 border-none outline-none bg-transparent text-sm placeholder:text-slate-400 px-1"
                             placeholder="Add tags…"
                             data-tag-input-target="input"
                             data-action="input->tag-input#filter focus->tag-input#open keydown->tag-input#addFromInput"
